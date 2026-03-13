@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ברוכים הבאים לשיעור</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Noto+Serif+Hebrew:wght@400;700;900&family=Heebo:wght@400;700;900&family=Rubik:wght@400;700;900&family=Secular+One&family=Suez+One&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#e8b94f;--accent-dim:rgba(232,185,79,.15);--text-main:#f0e6d3;--text-dim:rgba(240,230,211,.45);--panel-bg:rgba(7,12,24,.94);--border:rgba(232,185,79,.28);--glow:rgba(232,185,79,.4);--title-font:'Frank Ruhl Libre',serif;--title-size:3.2rem;--title-color:#f0e6d3;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{min-height:100vh;display:flex;flex-direction:column;align-items:center;background:linear-gradient(160deg,#0a0e1a,#0d2137);overflow-x:hidden;position:relative;transition:background 1.2s;}
+#bgCanvas{position:fixed;inset:0;pointer-events:none;z-index:0;width:100%;height:100%}
+#fsOverlay{position:fixed;inset:0;z-index:800;display:none;flex-direction:column;align-items:center;justify-content:center;gap:36px;background:transparent;pointer-events:none;}
+#fsOverlay.active{display:flex;pointer-events:auto}
+.fs-ornament{font-family:'Cormorant Garamond',serif;color:var(--accent);opacity:.35;font-size:.9rem;letter-spacing:.55em;user-select:none;}
+#fsTitle{font-family:var(--title-font);color:var(--title-color);font-size:clamp(2.2rem,5.5vw,5rem);font-weight:900;text-align:center;line-height:1.3;padding:0 48px 20px;text-shadow:0 0 80px rgba(232,185,79,.25);border-bottom:2px solid var(--border);position:relative;}
+#fsTitle::before,#fsTitle::after{content:'✦';position:absolute;top:50%;transform:translateY(-50%);color:var(--accent);opacity:.4;font-size:.5em;font-family:'Cormorant Garamond',serif;}
+#fsTitle::before{right:10px}#fsTitle::after{left:10px}
+.fs-timer-wrap{display:flex;align-items:flex-end;gap:6px;direction:ltr}
+.fs-digits{font-family:'Cormorant Garamond',serif;font-size:clamp(9rem,22vw,20rem);font-weight:300;color:var(--text-main);line-height:1;letter-spacing:-.03em;text-shadow:0 0 120px rgba(232,185,79,.2);min-width:2.1ch;text-align:center;}
+.fs-unit{font-family:'Cormorant Garamond',serif;font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);padding-bottom:14px;}
+.fs-sep{font-family:'Cormorant Garamond',serif;font-size:clamp(7rem,18vw,15rem);font-weight:300;color:var(--accent);opacity:.4;line-height:1;padding-bottom:36px;animation:blink 1s step-end infinite;}
+#fsEndMsg{font-family:var(--title-font);font-size:clamp(2.5rem,6vw,5rem);font-weight:900;color:var(--accent);text-align:center;text-shadow:0 0 60px var(--glow);animation:endGlow 1.5s ease-in-out infinite alternate;display:none;}
+.fs-exit-hint{font-family:'Cormorant Garamond',serif;font-size:.8rem;letter-spacing:.2em;color:var(--text-dim);opacity:.5;margin-top:8px;}
+.fs-fab{position:fixed;bottom:32px;right:32px;width:50px;height:50px;border-radius:50%;background:var(--panel-bg);border:1px solid var(--border);color:var(--accent);font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;transition:all .25s;backdrop-filter:blur(12px);box-shadow:0 4px 24px rgba(0,0,0,.4);}
+.fs-fab:hover{background:var(--accent-dim);transform:scale(1.08)}
+.page-wrap{position:relative;z-index:2;width:100%;max-width:860px;display:flex;flex-direction:column;align-items:center;padding:70px 24px 50px;transition:opacity .3s;}
+.page-wrap.hidden{opacity:0;pointer-events:none}
+.ornament{font-family:'Cormorant Garamond',serif;color:var(--accent);opacity:.4;font-size:1rem;letter-spacing:.55em;margin-bottom:32px;user-select:none;}
+.hebrew-title{font-family:var(--title-font);font-size:var(--title-size);font-weight:900;color:var(--title-color);text-align:center;line-height:1.3;padding:22px 56px;border-bottom:2px solid var(--border);position:relative;text-shadow:0 0 80px rgba(232,185,79,.25);transition:font-family .3s,font-size .3s,color .3s;margin-bottom:64px;word-break:break-word;}
+.hebrew-title::before,.hebrew-title::after{content:'✦';position:absolute;top:50%;transform:translateY(-50%);color:var(--accent);opacity:.45;font-size:.55em;font-family:'Cormorant Garamond',serif;}
+.hebrew-title::before{right:16px}.hebrew-title::after{left:16px}
+.timer-label{font-family:'Cormorant Garamond',serif;font-size:.95rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);opacity:.75;text-align:center;margin-bottom:22px;}
+.timer-display{display:flex;align-items:flex-end;justify-content:center;gap:6px;direction:ltr;margin-bottom:22px;}
+.time-block{display:flex;flex-direction:column;align-items:center;gap:8px}
+.time-digits{font-family:'Cormorant Garamond',serif;font-size:clamp(5.5rem,15vw,12rem);font-weight:300;color:var(--text-main);line-height:1;letter-spacing:-.03em;text-shadow:0 0 100px rgba(232,185,79,.2);min-width:2.1ch;text-align:center;}
+.time-digits.pulse{animation:numPulse .14s ease}
+@keyframes numPulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+.time-unit{font-family:'Cormorant Garamond',serif;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);}
+.timer-sep{font-family:'Cormorant Garamond',serif;font-size:clamp(4rem,12vw,9rem);font-weight:300;color:var(--accent);opacity:.4;line-height:1;padding-bottom:30px;animation:blink 1s step-end infinite;}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:.1}}
+.timer-ended{font-family:var(--title-font);font-size:clamp(2rem,5vw,4rem);font-weight:900;color:var(--accent);text-align:center;text-shadow:0 0 60px var(--glow);animation:endGlow 1.5s ease-in-out infinite alternate;display:none;}
+@keyframes endGlow{from{text-shadow:0 0 20px var(--glow)}to{text-shadow:0 0 80px var(--glow),0 0 160px rgba(232,185,79,.25)}}
+.progress-wrap{width:min(620px,88vw);height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-bottom:80px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#f5e17a);border-radius:2px;transition:width 1s linear;box-shadow:0 0 12px var(--glow);}
+.divider{display:flex;align-items:center;gap:18px;width:min(620px,88vw);margin-bottom:42px;}
+.divider-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+.divider-icon{color:var(--accent);opacity:.4;font-size:.85rem;letter-spacing:.3em;font-family:'Cormorant Garamond',serif}
+.music-section{width:min(660px,92vw);background:var(--panel-bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;backdrop-filter:blur(14px);margin-bottom:90px;}
+.music-header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid var(--border);direction:ltr;gap:12px;}
+.music-label{font-family:'Cormorant Garamond',serif;font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent)}
+.music-tabs{display:flex;gap:6px}
+.music-tab{padding:5px 15px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text-dim);font-size:.78rem;cursor:pointer;font-family:'Cormorant Garamond',serif;letter-spacing:.05em;transition:all .2s;}
+.music-tab.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.music-url-row{display:flex;gap:8px;padding:12px 22px;direction:ltr;border-bottom:1px solid var(--border);}
+.music-url-input{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 13px;color:var(--text-main);font-size:.82rem;font-family:monospace;outline:none;transition:border-color .2s;}
+.music-url-input:focus{border-color:var(--accent)}
+.music-url-input::placeholder{color:var(--text-dim)}
+.music-load-btn{padding:8px 20px;background:var(--accent-dim);border:1px solid var(--accent);border-radius:7px;color:var(--accent);font-size:.82rem;cursor:pointer;font-family:'Cormorant Garamond',serif;letter-spacing:.08em;transition:all .2s;white-space:nowrap;}
+.music-load-btn:hover{background:rgba(232,185,79,.25)}
+.music-embed-area{min-height:90px;display:flex;align-items:center;justify-content:center}
+.music-embed-area iframe{display:block}
+.music-placeholder{padding:28px;text-align:center;color:var(--text-dim);font-family:'Cormorant Garamond',serif;font-size:.88rem;letter-spacing:.04em;}
+.settings-fab{position:fixed;bottom:32px;left:32px;width:50px;height:50px;border-radius:50%;background:var(--panel-bg);border:1px solid var(--border);color:var(--accent);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;transition:all .25s;backdrop-filter:blur(12px);box-shadow:0 4px 24px rgba(0,0,0,.4);}
+.settings-fab:hover{background:var(--accent-dim);transform:rotate(35deg)}
+.settings-panel{position:fixed;bottom:92px;left:32px;width:340px;background:var(--panel-bg);border:1px solid var(--border);border-radius:18px;padding:26px;z-index:199;backdrop-filter:blur(22px);direction:rtl;display:none;flex-direction:column;gap:20px;animation:slideUp .22s ease;box-shadow:0 8px 40px rgba(0,0,0,.5);max-height:88vh;overflow-y:auto;}
+.settings-panel.open{display:flex}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.settings-title{font-family:'Frank Ruhl Libre',serif;font-size:1rem;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border);padding-bottom:12px;}
+.setting-row{display:flex;flex-direction:column;gap:7px}
+.setting-label{font-family:'Cormorant Garamond',serif;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);}
+.setting-input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:9px 13px;color:var(--text-main);font-size:.9rem;font-family:'Frank Ruhl Libre',serif;outline:none;width:100%;transition:border-color .2s;direction:rtl;text-align:right;}
+.setting-input:focus{border-color:var(--accent)}
+.font-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.font-option{padding:10px 8px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text-main);font-size:1.05rem;cursor:pointer;text-align:center;transition:all .2s;}
+.font-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.font-option.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
+.slider-row{display:flex;align-items:center;gap:10px;direction:ltr}
+.font-slider{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;background:rgba(255,255,255,.15);outline:none;cursor:pointer;}
+.font-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px var(--glow);}
+.slider-val{font-family:'Cormorant Garamond',serif;font-size:.85rem;color:var(--accent);min-width:36px;text-align:center}
+.bg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.bg-option{aspect-ratio:1;border-radius:8px;border:2px solid transparent;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:rgba(255,255,255,.06);padding:6px 4px;}
+.bg-option:hover{border-color:var(--accent);transform:scale(1.06)}
+.bg-option.active{border-color:var(--accent);background:var(--accent-dim)}
+.bg-icon{font-size:1.4rem;line-height:1}.bg-name{font-size:.6rem;letter-spacing:.06em;color:var(--text-dim)}
+.color-row{display:flex;gap:10px;align-items:center}
+.color-swatch{width:34px;height:34px;border-radius:7px;border:1px solid var(--border);cursor:pointer;padding:3px;background:transparent;overflow:hidden;}
+.color-swatch input[type=color]{width:100%;height:100%;border:none;background:none;cursor:pointer;padding:0}
+.timer-inputs-row{display:flex;align-items:flex-end;gap:8px;direction:ltr;}
+.timer-input-group{display:flex;flex-direction:column;align-items:center;gap:5px}
+.timer-input-label{font-family:'Cormorant Garamond',serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);}
+.timer-set-input{width:62px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px;color:var(--text-main);font-size:.95rem;font-family:'Cormorant Garamond',serif;outline:none;text-align:center;transition:border-color .2s;}
+.timer-set-input:focus{border-color:var(--accent)}
+.timer-colon{color:var(--accent);font-family:'Cormorant Garamond',serif;font-size:1.4rem;padding-bottom:8px}
+.btn-row{display:flex;gap:8px;direction:ltr}
+.btn{flex:1;padding:9px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-main);font-size:.82rem;font-family:'Cormorant Garamond',serif;letter-spacing:.07em;cursor:pointer;transition:all .2s;}
+.btn:hover{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.btn-primary{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+.btn-primary:hover{background:rgba(232,185,79,.28)}
+.tip-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);border-top:1px solid rgba(232,185,79,.12);padding:7px 24px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:.75rem;color:var(--text-dim);letter-spacing:.06em;direction:ltr;z-index:10;backdrop-filter:blur(8px);}
+.tip-bar strong{color:var(--accent)}
+.watermark{position:relative;z-index:2;padding:8px 0 52px;font-family:'Cormorant Garamond',serif;font-size:.65rem;letter-spacing:.2em;color:rgba(240,230,211,.14);text-align:center;user-select:none;pointer-events:none;}
+</style>
+</head>
+<body>
+<canvas id="bgCanvas"></canvas>
+
+<div id="fsOverlay">
+  <div class="fs-ornament">· · · · ·</div>
+  <div id="fsTitle">התארגנו בנוח, נתחיל ממש עוד רגע</div>
+  <div class="fs-timer-wrap" id="fsTimerWrap">
+    <div class="time-block"><span class="fs-digits" id="fsTMin">10</span><span class="fs-unit">דקות</span></div>
+    <div class="fs-sep">:</div>
+    <div class="time-block"><span class="fs-digits" id="fsTSec">00</span><span class="fs-unit">שניות</span></div>
+  </div>
+  <div id="fsEndMsg">🎵 השיעור מתחיל עכשיו!</div>
+  <div class="fs-exit-hint">לחץ ESC ליציאה</div>
+</div>
+
+<div class="page-wrap" id="pageWrap">
+  <div class="ornament">· · · · ·</div>
+  <div class="hebrew-title" id="mainTitle">התארגנו בנוח, נתחיל ממש עוד רגע</div>
+  <div class="timer-label" id="timerLabel">השיעור מתחיל בעוד</div>
+  <div class="timer-display" id="timerDisplay">
+    <div class="time-block"><span class="time-digits" id="tMin">10</span><span class="time-unit">דקות</span></div>
+    <div class="timer-sep">:</div>
+    <div class="time-block"><span class="time-digits" id="tSec">00</span><span class="time-unit">שניות</span></div>
+  </div>
+  <div class="timer-ended" id="timerEnded">🎵 השיעור מתחיל עכשיו!</div>
+  <div class="progress-wrap"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
+  <div class="divider"><div class="divider-line"></div><div class="divider-icon">♪</div><div class="divider-line"></div></div>
+  <div class="music-section" id="musicSection">
+    <div class="music-header">
+      <span class="music-label">♪ Music Player</span>
+      <div class="music-tabs">
+        <button class="music-tab active" onclick="setMusicType('spotify',this)">Spotify</button>
+        <button class="music-tab" onclick="setMusicType('youtube',this)">YouTube / YT Music</button>
+      </div>
+    </div>
+    <div class="music-url-row">
+      <input class="music-url-input" id="musicUrl" type="text" placeholder="הדבק קישור Spotify — שיר, פלייליסט, אלבום…">
+      <button class="music-load-btn" onclick="loadMusic()">▶ Load</button>
+    </div>
+    <div class="music-embed-area" id="musicEmbed">
+      <p class="music-placeholder">הדבק קישור למעלה ולחץ Load<br>המוזיקה תושמע כאן ישירות</p>
+    </div>
+  </div>
+  <div class="watermark">Matan Margolin</div>
+</div>
+
+<button class="fs-fab" id="fsFab" onclick="enterFullscreen()" title="מסך מלא">⛶</button>
+<button class="settings-fab" id="settingsFab" onclick="toggleSettings()">⚙</button>
+
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-title">⚙ הגדרות</div>
+  <div class="setting-row">
+    <div class="setting-label">טקסט הכותרת</div>
+    <input class="setting-input" id="titleInput" value="התארגנו בנוח, נתחיל ממש עוד רגע" oninput="updateTitle()">
+  </div>
+  <div class="setting-row">
+    <div class="setting-label">צבע כותרת</div>
+    <div class="color-row">
+      <div class="color-swatch"><input type="color" id="titleColor" value="#f0e6d3" oninput="updateTitleColor()"></div>
+      <span style="font-size:.8rem;color:var(--text-dim);font-family:'Cormorant Garamond',serif">בחר צבע</span>
+    </div>
+  </div>
+  <div class="setting-row">
+    <div class="setting-label">פונט</div>
+    <div class="font-grid">
+      <div class="font-option active" style="font-family:'Frank Ruhl Libre',serif" onclick="setFont('Frank Ruhl Libre',this)">פרנק-רוהל</div>
+      <div class="font-option" style="font-family:'Noto Serif Hebrew',serif" onclick="setFont('Noto Serif Hebrew',this)">נוטו סריף</div>
+      <div class="font-option" style="font-family:'Heebo',sans-serif" onclick="setFont('Heebo',this)">הבו</div>
+      <div class="font-option" style="font-family:'Rubik',sans-serif" onclick="setFont('Rubik',this)">רוביק</div>
+      <div class="font-option" style="font-family:'Secular One',sans-serif" onclick="setFont('Secular One',this)">סקולר</div>
+      <div class="font-option" style="font-family:'Suez One',serif" onclick="setFont('Suez One',this)">סואץ</div>
+    </div>
+  </div>
+  <div class="setting-row">
+    <div class="setting-label">גודל פונט</div>
+    <div class="slider-row">
+      <input type="range" class="font-slider" id="fontSizeSlider" min="1.4" max="6.5" step="0.1" value="3.2" oninput="updateFontSize()">
+      <span class="slider-val" id="sliderVal">3.2</span>
+    </div>
+  </div>
+  <div class="setting-row">
+    <div class="setting-label">רקע אנימציה</div>
+    <div class="bg-grid">
+      <div class="bg-option active" onclick="setBgTheme('stars',this)"><div class="bg-icon">✨</div><div class="bg-name">כוכבים</div></div>
+      <div class="bg-option" onclick="setBgTheme('sea',this)"><div class="bg-icon">🌊</div><div class="bg-name">ים</div></div>
+      <div class="bg-option" onclick="setBgTheme('forest',this)"><div class="bg-icon">🌿</div><div class="bg-name">יער</div></div>
+      <div class="bg-option" onclick="setBgTheme('spring',this)"><div class="bg-icon">🌸</div><div class="bg-name">אביב</div></div>
+      <div class="bg-option" onclick="setBgTheme('rain',this)"><div class="bg-icon">🌧</div><div class="bg-name">גשם</div></div>
+      <div class="bg-option" onclick="setBgTheme('music',this)"><div class="bg-icon">🎵</div><div class="bg-name">מוזיקה</div></div>
+      <div class="bg-option" onclick="setBgTheme('science',this)"><div class="bg-icon">⚛</div><div class="bg-name">מדעים</div></div>
+      <div class="bg-option" onclick="setBgTheme('classroom',this)"><div class="bg-icon">🎒</div><div class="bg-name">כיתה</div></div>
+    </div>
+  </div>
+  <div class="setting-row">
+    <div class="setting-label">הגדר טיימר</div>
+    <div class="timer-inputs-row">
+      <div class="timer-input-group">
+        <div class="timer-input-label">דקות</div>
+        <input class="timer-set-input" id="setMin" type="number" min="0" max="99" value="10">
+      </div>
+      <div class="timer-colon">:</div>
+      <div class="timer-input-group">
+        <div class="timer-input-label">שניות</div>
+        <input class="timer-set-input" id="setSec" type="number" min="0" max="59" value="00">
+      </div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="resetTimer()">▶ Start</button>
+    <button class="btn" onclick="pauseTimer()">⏸ Pause</button>
+  </div>
+</div>
+
+<div class="tip-bar" id="tipBar">
+  💡 <strong>Share audio in Meet:</strong> Share Screen → <strong>Chrome Tab</strong> → pick this tab → enable <strong>"Share tab audio"</strong>
+</div>
+
+<script>
+const canvas=document.getElementById('bgCanvas'),ctx=canvas.getContext('2d');
+let W,H,particles=[],currentTheme='stars';
+const rnd=(a,b)=>a+Math.random()*(b-a);
+
+function resize(){
+  W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;
+  THEMES[currentTheme].init(W,H);
+}
+window.addEventListener('resize',resize);
+
+const THEMES={
+  stars:{
+    bg:['#0a0e1a','#0d2137'],
+    init(w,h){particles=Array.from({length:160},()=>({x:rnd(0,w),y:rnd(0,h),r:rnd(.2,1.8),baseA:rnd(.1,.75),a:0,phase:rnd(0,Math.PI*2),speed:rnd(.002,.01)}));},
+    draw(t){particles.forEach(p=>{p.a=p.baseA+Math.sin(t*p.speed+p.phase)*.25;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(240,230,211,${Math.max(0,p.a)})`;ctx.fill();});}
+  },
+  sea:{
+    bg:['#031e35','#065278'],
+    init(w,h){particles=Array.from({length:70},()=>({x:rnd(0,w),y:rnd(0,h*.42),r:rnd(.2,1.3),a:rnd(.05,.45),phase:rnd(0,Math.PI*2)}));},
+    draw(t){
+      particles.forEach(p=>{const a=p.a*Math.abs(Math.sin(t*.002+p.phase));ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(180,220,255,${a})`;ctx.fill();});
+      for(let i=0;i<5;i++){const yb=H*(.52+i*.075);ctx.beginPath();ctx.moveTo(0,yb);for(let x=0;x<=W;x+=8)ctx.lineTo(x,yb+Math.sin(x*.013+t*.06+i*1.3)*(15-i*2));ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=`rgba(4,65,110,${.28-i*.04})`;ctx.fill();}
+      ctx.strokeStyle='rgba(80,190,255,.06)';ctx.lineWidth=1;for(let i=0;i<3;i++){const yb=H*(.52+i*.075);ctx.beginPath();ctx.moveTo(0,yb);for(let x=0;x<=W;x+=8)ctx.lineTo(x,yb+Math.sin(x*.013+t*.06+i*1.3)*(15-i*2));ctx.stroke();}
+    }
+  },
+  forest:{
+    bg:['#040f09','#0c2518'],
+    init(w,h){particles=Array.from({length:60},()=>({x:rnd(0,w),y:rnd(-h,0),vx:rnd(-.2,.2),vy:rnd(.3,1),r:rnd(2,7),rot:rnd(0,Math.PI*2),rotS:rnd(-.04,.04),phase:rnd(0,Math.PI*2),color:`hsl(${100+rnd(0,55)},${50+rnd(0,30)}%,${22+rnd(0,22)}%)`}));},
+    draw(t){particles.forEach(p=>{p.y+=p.vy;p.x+=p.vx+Math.sin(t*.01+p.phase)*.5;p.rot+=p.rotS;if(p.y>H+20){p.y=-20;p.x=rnd(0,W);}ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.beginPath();ctx.ellipse(0,0,p.r*1.7,p.r*.85,0,0,Math.PI*2);ctx.fillStyle=p.color;ctx.globalAlpha=.72;ctx.fill();ctx.restore();});}
+  },
+  spring:{
+    bg:['#0b1c05','#173310'],
+    init(w,h){const cols=['#ffb7c5','#ffd6e0','#ffe4b5','#fff0a0','#d4f7a0','#c8f2c2','#ffc8f0'];particles=Array.from({length:70},()=>({x:rnd(0,w),y:rnd(0,h),vy:-rnd(.1,.55),vx:rnd(-.3,.3),r:rnd(2,6),rot:rnd(0,Math.PI*2),rotS:rnd(-.03,.03),phase:rnd(0,Math.PI*2),color:cols[Math.floor(rnd(0,cols.length))]}));},
+    draw(t){particles.forEach(p=>{p.y+=p.vy+Math.sin(t*.008+p.phase)*.3;p.x+=p.vx+Math.cos(t*.007+p.phase)*.35;p.rot+=p.rotS;if(p.y<-20){p.y=H+10;p.x=rnd(0,W);}if(p.x<-20)p.x=W+10;if(p.x>W+20)p.x=-10;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.globalAlpha=.68;ctx.fillStyle=p.color;for(let k=0;k<5;k++){ctx.beginPath();ctx.ellipse(p.r,0,p.r*1.1,p.r*.55,0,0,Math.PI*2);ctx.fill();ctx.rotate(Math.PI*.4);}ctx.restore();});}
+  },
+  rain:{
+    bg:['#060810','#0d1120'],
+    init(w,h){particles=Array.from({length:220},()=>({x:rnd(-w*.2,w*1.1),y:rnd(-h,h),len:rnd(6,22),speed:rnd(5,15),a:rnd(.07,.35)}));},
+    draw(){particles.forEach(p=>{p.y+=p.speed;p.x-=p.speed*.23;if(p.y>H+20||p.x<-20){p.y=rnd(-40,-5);p.x=rnd(-W*.2,W*1.1);}ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-p.len*.23,p.y+p.len);ctx.strokeStyle=`rgba(155,195,230,${p.a})`;ctx.lineWidth=.75;ctx.stroke();});if(Math.random()<.0015){ctx.save();ctx.globalAlpha=.1;ctx.fillStyle='#d0e8ff';ctx.fillRect(0,0,W,H);ctx.restore();}}
+  },
+  music:{
+    bg:['#070410','#120828'],
+    init(w,h){const notes=['♩','♪','♫','♬','𝄞','𝄢'];particles=Array.from({length:50},()=>({x:rnd(0,w),y:rnd(0,h),vy:-rnd(.12,.55),size:rnd(10,30),a:rnd(.07,.28),phase:rnd(0,Math.PI*2),char:notes[Math.floor(rnd(0,notes.length))]}));},
+    draw(t){particles.forEach(p=>{p.y+=p.vy;p.x+=Math.sin(t*.008+p.phase)*.6;if(p.y<-40){p.y=H+10;p.x=rnd(0,W);}ctx.save();ctx.globalAlpha=p.a;ctx.fillStyle='#e8b94f';ctx.font=`${p.size}px 'Cormorant Garamond',serif`;ctx.fillText(p.char,p.x,p.y);ctx.restore();});}
+  },
+  science:{
+    bg:['#030a18','#05122a'],
+    init(w,h){particles=Array.from({length:9},()=>({cx:rnd(w*.1,w*.9),cy:rnd(h*.1,h*.9),rx:rnd(40,100),ry:rnd(14,38),tilt:rnd(0,Math.PI),speed:rnd(.004,.009),phase:rnd(0,Math.PI*2),color:`hsl(${180+rnd(0,80)},90%,65%)`}));},
+    draw(t){ctx.fillStyle='rgba(90,170,255,.03)';for(let x=0;x<W;x+=44)for(let y=0;y<H;y+=44){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}particles.forEach(p=>{ctx.save();ctx.translate(p.cx,p.cy);ctx.rotate(p.tilt);ctx.beginPath();ctx.ellipse(0,0,p.rx,p.ry,0,0,Math.PI*2);ctx.strokeStyle=p.color;ctx.globalAlpha=.15;ctx.lineWidth=1;ctx.stroke();const a=t*p.speed+p.phase,ex=Math.cos(a)*p.rx,ey=Math.sin(a)*p.ry;ctx.beginPath();ctx.arc(ex,ey,3.5,0,Math.PI*2);ctx.fillStyle=p.color;ctx.globalAlpha=.85;ctx.fill();const g=ctx.createRadialGradient(ex,ey,0,ex,ey,14);g.addColorStop(0,p.color.replace('hsl','hsla').replace(')',',0.35)'));g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.globalAlpha=1;ctx.beginPath();ctx.arc(ex,ey,14,0,Math.PI*2);ctx.fill();ctx.restore();});}
+  },
+  classroom:{
+    bg:['#0a0704','#170f06'],
+    _off:null,
+    init(w,h){
+      particles=Array.from({length:22},()=>({x:rnd(0,w),y:rnd(0,h),r:rnd(.3,1.1),a:rnd(.04,.16),phase:rnd(0,Math.PI*2)}));
+      const oc=document.createElement('canvas');oc.width=w;oc.height=h;
+      const c=oc.getContext('2d');this._drawRoom(c,w,h);this._off=oc;
+    },
+    _drawRoom(c,w,h){
+      // Wall
+      const wg=c.createLinearGradient(0,0,0,h*.75);wg.addColorStop(0,'#1e1508');wg.addColorStop(1,'#140e04');c.fillStyle=wg;c.fillRect(0,0,w,h);
+      // Floor
+      const fy=h*.68,fg=c.createLinearGradient(0,fy,0,h);fg.addColorStop(0,'#251808');fg.addColorStop(1,'#110b02');c.fillStyle=fg;c.fillRect(0,fy,w,h-fy);
+      c.strokeStyle='rgba(0,0,0,.35)';c.lineWidth=1;
+      for(let y=fy;y<h;y+=h*.045){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
+      for(let x=0;x<w;x+=w*.075){c.beginPath();c.moveTo(x,fy);c.lineTo(x+w*.04,h);c.stroke();}
+      // Blackboard
+      const bx=w*.07,by=h*.06,bw=w*.86,bh=h*.4;
+      c.fillStyle='rgba(0,0,0,.5)';c.fillRect(bx+6,by+6,bw,bh);
+      const bg2=c.createLinearGradient(bx,by,bx,by+bh);bg2.addColorStop(0,'#1a3a1e');bg2.addColorStop(1,'#122916');c.fillStyle=bg2;c.fillRect(bx,by,bw,bh);
+      c.strokeStyle='#6a4520';c.lineWidth=10;c.strokeRect(bx-5,by-5,bw+10,bh+10);
+      c.strokeStyle='rgba(200,140,60,.2)';c.lineWidth=2;c.strokeRect(bx,by,bw,bh);
+      // Chalk rail
+      const rg=c.createLinearGradient(bx,by+bh+5,bx,by+bh+20);rg.addColorStop(0,'#7a5530');rg.addColorStop(1,'#4a3020');c.fillStyle=rg;c.fillRect(bx-8,by+bh+5,bw+16,16);
+      ['rgba(240,235,220,.7)','rgba(200,220,240,.6)','rgba(240,200,200,.6)','rgba(220,240,200,.6)'].forEach((col,i)=>{c.fillStyle=col;c.fillRect(bx+20+i*18,by+bh+8,12,8);});
+      // Chalk lines
+      c.strokeStyle='rgba(230,225,210,.22)';c.lineWidth=1.8;
+      for(let row=0;row<3;row++){const ry=by+bh*.25+row*bh*.26;for(let seg=0;seg<6;seg++){const sx=bx+bw*.06+seg*(bw*.14);c.beginPath();c.moveTo(sx,ry);c.bezierCurveTo(sx+20,ry-6,sx+40,ry+6,sx+bw*.12,ry);c.stroke();}}
+      // Staff lines on board
+      c.strokeStyle='rgba(200,220,200,.09)';c.lineWidth=.8;
+      for(let li=0;li<5;li++){const ly=by+bh*.62+li*6;c.beginPath();c.moveTo(bx+40,ly);c.lineTo(bx+bw*.55,ly);c.stroke();}
+      c.fillStyle='rgba(200,220,200,.15)';c.font=`${h*.08}px serif`;c.fillText('𝄞',bx+10,by+bh*.82);
+      // Ceiling lights
+      for(let i=0;i<4;i++){const lx=w*(.15+i*.24);const lg=c.createRadialGradient(lx,0,0,lx,h*.55,w*.28);lg.addColorStop(0,'rgba(255,235,180,.07)');lg.addColorStop(1,'transparent');c.fillStyle=lg;c.fillRect(0,0,w,h);c.fillStyle='rgba(255,245,205,.75)';c.fillRect(lx-38,4,76,7);}
+      // Window
+      const wx=w*.005,wy=h*.12,wwd=w*.055,wh2=h*.35;
+      const sg=c.createLinearGradient(wx,wy,wx,wy+wh2);sg.addColorStop(0,'#080d1e');sg.addColorStop(1,'#0a1228');c.fillStyle=sg;c.fillRect(wx,wy,wwd,wh2);
+      c.fillStyle='rgba(255,250,200,.55)';c.beginPath();c.arc(wx+wwd*.65,wy+wh2*.18,wwd*.15,0,Math.PI*2);c.fill();
+      [[.2,.3],[.7,.5],[.4,.7],[.8,.2],[.15,.8]].forEach(([fx,fy2])=>{c.fillStyle='rgba(255,255,255,.55)';c.beginPath();c.arc(wx+wwd*fx,wy+wh2*fy2,.7,0,Math.PI*2);c.fill();});
+      c.strokeStyle='#6a4820';c.lineWidth=5;c.strokeRect(wx,wy,wwd,wh2);c.beginPath();c.moveTo(wx+wwd/2,wy);c.lineTo(wx+wwd/2,wy+wh2);c.stroke();c.beginPath();c.moveTo(wx,wy+wh2/2);c.lineTo(wx+wwd,wy+wh2/2);c.stroke();
+      c.fillStyle='#7a5530';c.fillRect(wx-4,wy+wh2,wwd+8,8);
+      // Student desks
+      for(let r=0;r<3;r++)for(let col=0;col<5;col++){
+        const dx=w*(.12+col*.168),dy=h*(.54+r*.1),dw=w*.12,dh=h*.055,pv=1+r*.04;
+        c.fillStyle='rgba(0,0,0,.4)';c.fillRect(dx+4,dy+dh,dw*pv,h*.03);
+        const dg2=c.createLinearGradient(dx,dy,dx,dy+dh);dg2.addColorStop(0,'#4a3015');dg2.addColorStop(1,'#2e1d09');c.fillStyle=dg2;c.fillRect(dx,dy,dw*pv,dh);
+        c.strokeStyle='rgba(0,0,0,.4)';c.lineWidth=1;c.strokeRect(dx,dy,dw*pv,dh);
+        c.fillStyle='#2a1808';c.fillRect(dx+6,dy+dh,4,h*.035);c.fillRect(dx+dw*pv-10,dy+dh,4,h*.035);
+        if((r+col)%3===0){c.fillStyle=['#4a5a7a','#5a4a6a','#3a5a4a'][(r+col)%3];c.fillRect(dx+dw*.2,dy+2,dw*.4*pv,dh*.6);}
+      }
+      // Teacher desk
+      const tdx=w*.33,tdy=h*.48,tdw=w*.34,tdh=h*.08;
+      c.fillStyle='rgba(0,0,0,.5)';c.fillRect(tdx+5,tdy+tdh,tdw,h*.04);
+      const tdg=c.createLinearGradient(tdx,tdy,tdx,tdy+tdh);tdg.addColorStop(0,'#5a3c18');tdg.addColorStop(1,'#3a2008');c.fillStyle=tdg;c.fillRect(tdx,tdy,tdw,tdh);
+      c.strokeStyle='rgba(0,0,0,.5)';c.lineWidth=1.5;c.strokeRect(tdx,tdy,tdw,tdh);
+      c.fillStyle='#2e1a08';c.fillRect(tdx+12,tdy+tdh,6,h*.06);c.fillRect(tdx+tdw-18,tdy+tdh,6,h*.06);
+      c.fillStyle='#2a2a2a';c.fillRect(tdx+tdw*.28,tdy+4,tdw*.28,tdh*.65);c.fillStyle='rgba(100,150,255,.15)';c.fillRect(tdx+tdw*.3,tdy+6,tdw*.24,tdh*.5);
+    },
+    draw(t){
+      if(this._off)ctx.drawImage(this._off,0,0);
+      particles.forEach(p=>{const a=p.a*Math.abs(Math.sin(t*.004+p.phase));ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(220,210,185,${a})`;ctx.fill();});
+    }
+  }
+};
+
+function initTheme(n){const th=THEMES[n];document.body.style.background=`linear-gradient(160deg,${th.bg[0]} 0%,${th.bg[1]} 100%)`;th.init(W,H);}
+function setBgTheme(n,el){currentTheme=n;document.querySelectorAll('.bg-option').forEach(e=>e.classList.remove('active'));el.classList.add('active');initTheme(n);}
+let t=0;
+function frame(){ctx.clearRect(0,0,W,H);THEMES[currentTheme].draw(t);t++;requestAnimationFrame(frame);}
+resize();frame();
+
+// ── AUDIO ──
+let audioCtx=null;
+function getAC(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
+document.addEventListener('click',()=>getAC(),{once:true});
+
+function playBell(loud){
+  const ac=getAC(),vol=loud?.55:.35;
+  [{f:880,g:vol,d:3.5},{f:1318,g:vol*.5,d:2.5},{f:1760,g:vol*.3,d:2},{f:2637,g:vol*.15,d:1.2}].forEach(({f,g,d})=>{
+    const osc=ac.createOscillator(),gn=ac.createGain();
+    osc.connect(gn);gn.connect(ac.destination);
+    osc.type='sine';osc.frequency.setValueAtTime(f,ac.currentTime);
+    gn.gain.setValueAtTime(0,ac.currentTime);gn.gain.linearRampToValueAtTime(g,ac.currentTime+.01);gn.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);
+    osc.start(ac.currentTime);osc.stop(ac.currentTime+d);
+  });
+}
+
+function startMusicFade(){const ms=document.getElementById('musicSection');ms.style.transition='opacity 9.5s linear';ms.style.opacity='.06';}
+function resetMusicFade(){const ms=document.getElementById('musicSection');ms.style.transition='opacity .5s';ms.style.opacity='1';}
+
+// ── TIMER ──
+let totalSec=600,remaining=600,timerInterval=null,running=false,fadedAlready=false;
+const elMin=document.getElementById('tMin'),elSec=document.getElementById('tSec');
+const elProg=document.getElementById('progressFill'),elDisplay=document.getElementById('timerDisplay');
+const elLabel=document.getElementById('timerLabel'),elEnded=document.getElementById('timerEnded');
+const pad=n=>String(n).padStart(2,'0');
+
+function updateDisplay(){
+  const m=Math.floor(remaining/60),s=remaining%60,nm=pad(m),ns=pad(s);
+  if(elMin.textContent!==nm){elMin.textContent=nm;elMin.classList.remove('pulse');void elMin.offsetWidth;elMin.classList.add('pulse');}
+  if(elSec.textContent!==ns){elSec.textContent=ns;elSec.classList.remove('pulse');void elSec.offsetWidth;elSec.classList.add('pulse');}
+  elProg.style.width=(totalSec>0?(remaining/totalSec)*100:0)+'%';
+  document.getElementById('fsTMin').textContent=nm;
+  document.getElementById('fsTSec').textContent=ns;
+}
+
+function tick(){
+  if(remaining<=0){
+    clearInterval(timerInterval);running=false;
+    elDisplay.style.display='none';elLabel.style.display='none';
+    elEnded.style.display='block';elProg.style.width='0%';
+    document.getElementById('fsTimerWrap').style.display='none';
+    document.getElementById('fsEndMsg').style.display='block';
+    playBell(true);return;
+  }
+  if(remaining===10&&!fadedAlready){fadedAlready=true;startMusicFade();playBell(false);}
+  remaining--;updateDisplay();
+}
+
+function resetTimer(){
+  clearInterval(timerInterval);
+  const m=parseInt(document.getElementById('setMin').value)||0,s=parseInt(document.getElementById('setSec').value)||0;
+  totalSec=m*60+s;remaining=totalSec;fadedAlready=false;
+  elDisplay.style.display='';elLabel.style.display='';elEnded.style.display='none';
+  document.getElementById('fsTimerWrap').style.display='';document.getElementById('fsEndMsg').style.display='none';
+  resetMusicFade();updateDisplay();
+  timerInterval=setInterval(tick,1000);running=true;closeSettings();
+}
+
+function pauseTimer(){if(running){clearInterval(timerInterval);running=false;}else{timerInterval=setInterval(tick,1000);running=true;}}
+updateDisplay();timerInterval=setInterval(tick,1000);running=true;
+
+// ── MUSIC ──
+let musicType='spotify';
+function setMusicType(type,el){musicType=type;document.querySelectorAll('.music-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('musicUrl').placeholder=type==='spotify'?'הדבק קישור Spotify — שיר, פלייליסט, אלבום…':'הדבק קישור YouTube / YouTube Music…';}
+
+function getYTIds(url){
+  try{
+    const u=new URL(url),h=u.hostname;
+    if(h==='youtu.be')return{v:u.pathname.slice(1).split('/')[0],list:u.searchParams.get('list')};
+    if(h.endsWith('youtube.com')||h.endsWith('music.youtube.com'))return{v:u.searchParams.get('v'),list:u.searchParams.get('list')};
+  }catch(e){}
+  const m=url.match(/(?:v=|embed\/|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return m?{v:m[1],list:null}:{v:null,list:null};
+}
+
+function loadMusic(){
+  const url=document.getElementById('musicUrl').value.trim();if(!url)return;
+  const embed=document.getElementById('musicEmbed');resetMusicFade();
+  const isSpotify=url.includes('spotify.com')||url.startsWith('spotify:');
+  const isYT=url.includes('youtube.com')||url.includes('youtu.be')||url.includes('music.youtube.com');
+  if(isSpotify||(!isYT&&musicType==='spotify')){
+    let clean=url.replace(/^spotify:(track|playlist|album):(.+)$/,'https://open.spotify.com/$1/$2');
+    const m=clean.match(/spotify\.com\/(track|playlist|album|artist)\/([a-zA-Z0-9]+)/);
+    if(m){embed.innerHTML=`<iframe src="https://open.spotify.com/embed/${m[1]}/${m[2]}?utm_source=generator&theme=0" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="display:block"></iframe>`;}
+    else embed.innerHTML=`<p class="music-placeholder" style="color:#e85f4f">⚠ קישור Spotify לא תקין</p>`;
+  }else if(isYT||musicType==='youtube'){
+    const{v,list}=getYTIds(url);
+    if(v||list){
+      const base=v?`https://www.youtube-nocookie.com/embed/${v}`:'https://www.youtube-nocookie.com/embed/videoseries';
+      const p=new URLSearchParams({autoplay:'1',rel:'0',modestbranding:'1',playsinline:'1'});
+      if(list)p.set('list',list);
+      if(v&&list)p.set('listType','playlist');
+      embed.innerHTML=`<iframe src="${base}?${p}" width="100%" height="200" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:block"></iframe>`;
+    }else embed.innerHTML=`<p class="music-placeholder" style="color:#e85f4f">⚠ קישור YouTube לא תקין</p>`;
+  }else embed.innerHTML=`<p class="music-placeholder" style="color:#e85f4f">⚠ לא זוהה קישור תקין</p>`;
+}
+document.getElementById('musicUrl').addEventListener('keydown',e=>{if(e.key==='Enter')loadMusic();});
+
+// ── FULLSCREEN ──
+let isFS=false;
+function enterFullscreen(){
+  isFS=true;
+  const mt=document.getElementById('mainTitle'),ft=document.getElementById('fsTitle');
+  ft.textContent=mt.textContent;
+  document.getElementById('fsOverlay').classList.add('active');
+  document.getElementById('pageWrap').classList.add('hidden');
+  document.getElementById('fsFab').style.display='none';
+  document.getElementById('settingsFab').style.display='none';
+  document.getElementById('tipBar').style.display='none';
+}
+function exitFullscreen(){
+  if(!isFS)return;isFS=false;
+  document.getElementById('fsOverlay').classList.remove('active');
+  document.getElementById('pageWrap').classList.remove('hidden');
+  document.getElementById('fsFab').style.display='';
+  document.getElementById('settingsFab').style.display='';
+  document.getElementById('tipBar').style.display='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')exitFullscreen();});
+
+// ── SETTINGS ──
+function toggleSettings(){document.getElementById('settingsPanel').classList.toggle('open');}
+function closeSettings(){document.getElementById('settingsPanel').classList.remove('open');}
+document.addEventListener('click',e=>{const p=document.getElementById('settingsPanel'),f=document.getElementById('settingsFab');if(p.classList.contains('open')&&!p.contains(e.target)&&!f.contains(e.target))closeSettings();});
+function updateTitle(){const v=document.getElementById('titleInput').value;document.getElementById('mainTitle').textContent=v;document.getElementById('fsTitle').textContent=v;}
+function updateTitleColor(){document.documentElement.style.setProperty('--title-color',document.getElementById('titleColor').value);}
+function setFont(name,el){document.querySelectorAll('.font-option').forEach(e=>e.classList.remove('active'));el.classList.add('active');document.documentElement.style.setProperty('--title-font',`'${name}', serif`);}
+function updateFontSize(){const v=document.getElementById('fontSizeSlider').value;document.getElementById('sliderVal').textContent=parseFloat(v).toFixed(1);document.documentElement.style.setProperty('--title-size',v+'rem');}
+</script>
+</body>
+</html>
