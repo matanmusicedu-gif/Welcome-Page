@@ -102,6 +102,20 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
 .tip-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);border-top:1px solid rgba(232,185,79,.12);padding:7px 24px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:.75rem;color:var(--text-dim);letter-spacing:.06em;direction:ltr;z-index:10;backdrop-filter:blur(8px);}
 .tip-bar strong{color:var(--accent)}
 .watermark{position:relative;z-index:2;padding:8px 0 52px;font-family:'Cormorant Garamond',serif;font-size:.65rem;letter-spacing:.2em;color:rgba(240,230,211,.14);text-align:center;user-select:none;pointer-events:none;}
+/* Reset button — appears after timer ends */
+#resetBtn{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  display:none;align-items:center;gap:10px;
+  padding:14px 32px;
+  background:var(--panel-bg);border:1px solid var(--accent);border-radius:12px;
+  color:var(--accent);font-family:'Cormorant Garamond',serif;font-size:1.05rem;
+  letter-spacing:.12em;cursor:pointer;backdrop-filter:blur(18px);
+  box-shadow:0 6px 32px rgba(0,0,0,.5),0 0 30px rgba(232,185,79,.12);
+  z-index:900;transition:all .2s;
+  animation:slideUp .3s ease;
+}
+#resetBtn:hover{background:var(--accent-dim);box-shadow:0 6px 40px rgba(0,0,0,.6),0 0 50px rgba(232,185,79,.2);}
+#resetBtn svg{flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -120,7 +134,7 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
 </div>
 
 <div class="page-wrap" id="pageWrap">
-  <div class="ornament">· · · · ·</div>
+  <div class="ornament" id="ornament">· · · · ·</div>
   <div class="hebrew-title" id="mainTitle">התארגנו בנוח, נתחיל ממש עוד רגע</div>
   <div class="timer-label" id="timerLabel">השיעור מתחיל בעוד</div>
   <div class="timer-display" id="timerDisplay">
@@ -220,6 +234,15 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
 <div class="tip-bar" id="tipBar">
   💡 <strong>Share audio in Meet:</strong> Share Screen → <strong>Chrome Tab</strong> → pick this tab → enable <strong>"Share tab audio"</strong>
 </div>
+
+<!-- Reset button: appears when timer ends and user exits fullscreen -->
+<button id="resetBtn" onclick="resetAll()">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+    <path d="M3 3v5h5"/>
+  </svg>
+  איפוס כותרת וטיימר
+</button>
 
 <script>
 const canvas=document.getElementById('bgCanvas'),ctx=canvas.getContext('2d');
@@ -348,14 +371,30 @@ let audioCtx=null;
 function getAC(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
 document.addEventListener('click',()=>getAC(),{once:true});
 
-function playBell(loud){
-  const ac=getAC(),vol=loud?.55:.35;
-  [{f:880,g:vol,d:3.5},{f:1318,g:vol*.5,d:2.5},{f:1760,g:vol*.3,d:2},{f:2637,g:vol*.15,d:1.2}].forEach(({f,g,d})=>{
+// Slow arpeggiated C-major chord (C4 E4 G4 C5), pure sine, played at time's up
+function playArpeggio(){
+  const ac=getAC();
+  const notes=[261.63,329.63,392.00,523.25];
+  const stepDelay=0.55, noteDur=3.2, vol=0.28;
+  notes.forEach((freq,i)=>{
+    const t0=ac.currentTime+i*stepDelay;
+    // Main tone
     const osc=ac.createOscillator(),gn=ac.createGain();
     osc.connect(gn);gn.connect(ac.destination);
-    osc.type='sine';osc.frequency.setValueAtTime(f,ac.currentTime);
-    gn.gain.setValueAtTime(0,ac.currentTime);gn.gain.linearRampToValueAtTime(g,ac.currentTime+.01);gn.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+d);
-    osc.start(ac.currentTime);osc.stop(ac.currentTime+d);
+    osc.type='sine';osc.frequency.setValueAtTime(freq,t0);
+    gn.gain.setValueAtTime(0,t0);
+    gn.gain.linearRampToValueAtTime(vol,t0+0.09);
+    gn.gain.setValueAtTime(vol,t0+0.20);
+    gn.gain.exponentialRampToValueAtTime(0.0001,t0+noteDur);
+    osc.start(t0);osc.stop(t0+noteDur);
+    // Warm octave-down layer
+    const osc2=ac.createOscillator(),gn2=ac.createGain();
+    osc2.connect(gn2);gn2.connect(ac.destination);
+    osc2.type='sine';osc2.frequency.setValueAtTime(freq*0.5,t0);
+    gn2.gain.setValueAtTime(0,t0);
+    gn2.gain.linearRampToValueAtTime(vol*0.32,t0+0.12);
+    gn2.gain.exponentialRampToValueAtTime(0.0001,t0+noteDur*0.88);
+    osc2.start(t0);osc2.stop(t0+noteDur);
   });
 }
 
@@ -381,13 +420,27 @@ function updateDisplay(){
 function tick(){
   if(remaining<=0){
     clearInterval(timerInterval);running=false;
+    // Hide everything except the end message
     elDisplay.style.display='none';elLabel.style.display='none';
     elEnded.style.display='block';elProg.style.width='0%';
+    document.getElementById('mainTitle').style.opacity='0';
+    document.getElementById('mainTitle').style.transition='opacity 1.5s ease';
+    setTimeout(()=>{document.getElementById('mainTitle').style.display='none';},1500);
+    document.getElementById('ornament').style.display='none';
+    // Fullscreen counterparts
     document.getElementById('fsTimerWrap').style.display='none';
     document.getElementById('fsEndMsg').style.display='block';
-    playBell(true);return;
+    document.getElementById('fsTitle').style.opacity='0';
+    document.getElementById('fsTitle').style.transition='opacity 1.5s ease';
+    setTimeout(()=>{document.getElementById('fsTitle').style.display='none';},1500);
+    // Play arpeggiated chord
+    playArpeggio();
+    // Show reset button
+    document.getElementById('resetBtn').style.display='flex';
+    return;
   }
-  if(remaining===10&&!fadedAlready){fadedAlready=true;startMusicFade();playBell(false);}
+  // At 10 seconds: start smooth music fade only (no sound)
+  if(remaining===10&&!fadedAlready){fadedAlready=true;startMusicFade();}
   remaining--;updateDisplay();
 }
 
@@ -395,8 +448,15 @@ function resetTimer(){
   clearInterval(timerInterval);
   const m=parseInt(document.getElementById('setMin').value)||0,s=parseInt(document.getElementById('setSec').value)||0;
   totalSec=m*60+s;remaining=totalSec;fadedAlready=false;
+  // Restore title if it was hidden
+  const mainTitle=document.getElementById('mainTitle');
+  mainTitle.style.display='';mainTitle.style.opacity='';mainTitle.style.transition='';
+  document.getElementById('ornament').style.display='';
+  const fsTitle=document.getElementById('fsTitle');
+  fsTitle.style.display='';fsTitle.style.opacity='';fsTitle.style.transition='';
   elDisplay.style.display='';elLabel.style.display='';elEnded.style.display='none';
   document.getElementById('fsTimerWrap').style.display='';document.getElementById('fsEndMsg').style.display='none';
+  document.getElementById('resetBtn').style.display='none';
   resetMusicFade();updateDisplay();
   timerInterval=setInterval(tick,1000);running=true;closeSettings();
 }
@@ -460,6 +520,30 @@ function exitFullscreen(){
   document.getElementById('fsFab').style.display='';
   document.getElementById('settingsFab').style.display='';
   document.getElementById('tipBar').style.display='';
+  // If timer has ended, show reset button
+  if(remaining<=0) document.getElementById('resetBtn').style.display='flex';
+}
+
+function resetAll(){
+  clearInterval(timerInterval); running=false; fadedAlready=false;
+  // Restore title
+  const mainTitle=document.getElementById('mainTitle');
+  mainTitle.style.display='';mainTitle.style.opacity='';mainTitle.style.transition='';
+  document.getElementById('ornament').style.display='';
+  // Restore fullscreen title
+  const fsTitle=document.getElementById('fsTitle');
+  fsTitle.style.display='';fsTitle.style.opacity='';fsTitle.style.transition='';
+  // Reset timer
+  const m=parseInt(document.getElementById('setMin').value)||0;
+  const s=parseInt(document.getElementById('setSec').value)||0;
+  totalSec=m*60+s; remaining=totalSec;
+  elDisplay.style.display=''; elLabel.style.display='';
+  elEnded.style.display='none';
+  document.getElementById('fsTimerWrap').style.display='';
+  document.getElementById('fsEndMsg').style.display='none';
+  resetMusicFade(); updateDisplay();
+  // Hide reset button
+  document.getElementById('resetBtn').style.display='none';
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape')exitFullscreen();});
 
