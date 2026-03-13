@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ברוכים הבאים לשיעור</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Noto+Serif+Hebrew:wght@400;700;900&family=Heebo:wght@400;700;900&family=Rubik:wght@400;700;900&family=Secular+One&family=Suez+One&family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&family=Noto+Serif+Hebrew:wght@400;700;900&family=Heebo:wght@400;700;900&family=Rubik:wght@400;700;900&family=Secular+One&family=Suez+One&family=Cormorant+Garamond:wght@300;400;600&family=Oswald:wght@300;400;600&family=Playfair+Display:wght@400;700&family=Bebas+Neue&family=Roboto+Mono:wght@300;400&family=Space+Mono&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
-:root{--accent:#e8b94f;--accent-dim:rgba(232,185,79,.15);--text-main:#f0e6d3;--text-dim:rgba(240,230,211,.45);--panel-bg:rgba(7,12,24,.94);--border:rgba(232,185,79,.28);--glow:rgba(232,185,79,.4);--title-font:'Frank Ruhl Libre',serif;--title-size:3.2rem;--title-color:#f0e6d3;}
+:root{--accent:#e8b94f;--accent-dim:rgba(232,185,79,.15);--text-main:#f0e6d3;--text-dim:rgba(240,230,211,.45);--panel-bg:rgba(7,12,24,.94);--border:rgba(232,185,79,.28);--glow:rgba(232,185,79,.4);--title-font:'Frank Ruhl Libre',serif;--title-size:3.2rem;--title-color:#f0e6d3;--timer-font:'Oswald',sans-serif;}
 *{margin:0;padding:0;box-sizing:border-box}
 body{min-height:100vh;display:flex;flex-direction:column;align-items:center;background:linear-gradient(160deg,#0a0e1a,#0d2137);overflow-x:hidden;position:relative;transition:background 1.2s;}
 #bgCanvas{position:fixed;inset:0;pointer-events:none;z-index:0;width:100%;height:100%}
@@ -18,11 +18,12 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
 #fsTitle::before,#fsTitle::after{content:'✦';position:absolute;top:50%;transform:translateY(-50%);color:var(--accent);opacity:.4;font-size:.5em;font-family:'Cormorant Garamond',serif;}
 #fsTitle::before{right:10px}#fsTitle::after{left:10px}
 .fs-timer-wrap{display:flex;align-items:flex-end;gap:6px;direction:ltr}
-.fs-digits{font-family:'Cormorant Garamond',serif;font-size:clamp(9rem,22vw,20rem);font-weight:300;color:var(--text-main);line-height:1;letter-spacing:-.03em;text-shadow:0 0 120px rgba(232,185,79,.2);min-width:2.1ch;text-align:center;}
+.fs-digits{font-family:var(--timer-font);font-size:clamp(9rem,22vw,20rem);font-weight:300;color:var(--text-main);line-height:1;letter-spacing:-.03em;text-shadow:0 0 120px rgba(232,185,79,.2);min-width:2.1ch;text-align:center;}
 .fs-unit{font-family:'Cormorant Garamond',serif;font-size:.85rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);padding-bottom:14px;}
-.fs-sep{font-family:'Cormorant Garamond',serif;font-size:clamp(7rem,18vw,15rem);font-weight:300;color:var(--accent);opacity:.4;line-height:1;padding-bottom:36px;animation:blink 1s step-end infinite;}
+.fs-sep{font-family:var(--timer-font);font-size:clamp(7rem,18vw,15rem);font-weight:300;color:var(--accent);opacity:.4;line-height:1;padding-bottom:36px;animation:blink 1s step-end infinite;}
 #fsEndMsg{font-family:var(--title-font);font-size:clamp(2.5rem,6vw,5rem);font-weight:900;color:var(--accent);text-align:center;text-shadow:0 0 60px var(--glow);animation:endGlow 1.5s ease-in-out infinite alternate;display:none;}
-.fs-exit-hint{font-family:'Cormorant Garamond',serif;font-size:.8rem;letter-spacing:.2em;color:var(--text-dim);opacity:.5;margin-top:8px;}
+.fs-exit-hint{font-family:'Cormorant Garamond',serif;font-size:.8rem;letter-spacing:.2em;color:var(--text-dim);opacity:.5;margin-top:8px;background:none;border:none;cursor:pointer;padding:6px 12px;border-radius:6px;transition:opacity .2s;}
+.fs-exit-hint:hover{opacity:.85;}
 .fs-fab{position:fixed;bottom:32px;right:32px;width:50px;height:50px;border-radius:50%;background:var(--panel-bg);border:1px solid var(--border);color:var(--accent);font-size:1.15rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200;transition:all .25s;backdrop-filter:blur(12px);box-shadow:0 4px 24px rgba(0,0,0,.4);}
 .fs-fab:hover{background:var(--accent-dim);transform:scale(1.08)}
 .page-wrap{position:relative;z-index:2;width:100%;max-width:860px;display:flex;flex-direction:column;align-items:center;padding:70px 24px 50px;transition:opacity .3s;}
@@ -34,11 +35,11 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
 .timer-label{font-family:'Cormorant Garamond',serif;font-size:.95rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);opacity:.75;text-align:center;margin-bottom:22px;}
 .timer-display{display:flex;align-items:flex-end;justify-content:center;gap:6px;direction:ltr;margin-bottom:22px;}
 .time-block{display:flex;flex-direction:column;align-items:center;gap:8px}
-.time-digits{font-family:'Cormorant Garamond',serif;font-size:clamp(5.5rem,15vw,12rem);font-weight:300;color:var(--text-main);line-height:1;letter-spacing:-.03em;text-shadow:0 0 100px rgba(232,185,79,.2);min-width:2.1ch;text-align:center;}
+.time-digits{font-family:var(--timer-font);font-size:8rem;font-weight:300;color:var(--text-main);line-height:1;letter-spacing:-.03em;text-shadow:0 0 100px rgba(232,185,79,.2);min-width:2.1ch;text-align:center;}
 .time-digits.pulse{animation:numPulse .14s ease}
 @keyframes numPulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 .time-unit{font-family:'Cormorant Garamond',serif;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);}
-.timer-sep{font-family:'Cormorant Garamond',serif;font-size:clamp(4rem,12vw,9rem);font-weight:300;color:var(--accent);opacity:.4;line-height:1;padding-bottom:30px;animation:blink 1s step-end infinite;}
+.timer-sep{font-family:var(--timer-font);font-size:6rem;font-weight:300;color:var(--accent);opacity:.4;line-height:1;padding-bottom:30px;animation:blink 1s step-end infinite;}
 @keyframes blink{0%,100%{opacity:.4}50%{opacity:.1}}
 .timer-ended{font-family:var(--title-font);font-size:clamp(2rem,5vw,4rem);font-weight:900;color:var(--accent);text-align:center;text-shadow:0 0 60px var(--glow);animation:endGlow 1.5s ease-in-out infinite alternate;display:none;}
 @keyframes endGlow{from{text-shadow:0 0 20px var(--glow)}to{text-shadow:0 0 80px var(--glow),0 0 160px rgba(232,185,79,.25)}}
@@ -88,12 +89,12 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
 .color-row{display:flex;gap:10px;align-items:center}
 .color-swatch{width:34px;height:34px;border-radius:7px;border:1px solid var(--border);cursor:pointer;padding:3px;background:transparent;overflow:hidden;}
 .color-swatch input[type=color]{width:100%;height:100%;border:none;background:none;cursor:pointer;padding:0}
-.timer-inputs-row{display:flex;align-items:flex-end;gap:8px;direction:ltr;}
+.timer-inputs-row{display:flex;align-items:flex-end;gap:10px;direction:ltr;}
 .timer-input-group{display:flex;flex-direction:column;align-items:center;gap:5px}
-.timer-input-label{font-family:'Cormorant Garamond',serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);}
-.timer-set-input{width:62px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px;color:var(--text-main);font-size:.95rem;font-family:'Cormorant Garamond',serif;outline:none;text-align:center;transition:border-color .2s;}
+.timer-input-label{font-family:'Cormorant Garamond',serif;font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);}
+.timer-set-input{width:80px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:11px 8px;color:var(--text-main);font-size:1.5rem;font-family:'Cormorant Garamond',serif;outline:none;text-align:center;transition:border-color .2s;}
 .timer-set-input:focus{border-color:var(--accent)}
-.timer-colon{color:var(--accent);font-family:'Cormorant Garamond',serif;font-size:1.4rem;padding-bottom:8px}
+.timer-colon{color:var(--accent);font-family:'Cormorant Garamond',serif;font-size:1.8rem;padding-bottom:10px}
 .btn-row{display:flex;gap:8px;direction:ltr}
 .btn{flex:1;padding:9px 12px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text-main);font-size:.82rem;font-family:'Cormorant Garamond',serif;letter-spacing:.07em;cursor:pointer;transition:all .2s;}
 .btn:hover{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
@@ -102,20 +103,24 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
 .tip-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.5);border-top:1px solid rgba(232,185,79,.12);padding:7px 24px;text-align:center;font-family:'Cormorant Garamond',serif;font-size:.75rem;color:var(--text-dim);letter-spacing:.06em;direction:ltr;z-index:10;backdrop-filter:blur(8px);}
 .tip-bar strong{color:var(--accent)}
 .watermark{position:relative;z-index:2;padding:8px 0 52px;font-family:'Cormorant Garamond',serif;font-size:.65rem;letter-spacing:.2em;color:rgba(240,230,211,.14);text-align:center;user-select:none;pointer-events:none;}
-/* Reset button — appears after timer ends */
+/* Reset button — appears after timer ends, bottom-left, compact */
 #resetBtn{
-  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  display:none;align-items:center;gap:10px;
-  padding:14px 32px;
-  background:var(--panel-bg);border:1px solid var(--accent);border-radius:12px;
-  color:var(--accent);font-family:'Cormorant Garamond',serif;font-size:1.05rem;
-  letter-spacing:.12em;cursor:pointer;backdrop-filter:blur(18px);
-  box-shadow:0 6px 32px rgba(0,0,0,.5),0 0 30px rgba(232,185,79,.12);
+  position:fixed;bottom:200px;left:32px;
+  display:none;align-items:center;gap:6px;
+  padding:7px 14px;
+  background:var(--panel-bg);border:1px solid var(--accent);border-radius:8px;
+  color:var(--accent);font-family:'Cormorant Garamond',serif;font-size:0.72rem;
+  letter-spacing:.1em;cursor:pointer;backdrop-filter:blur(14px);
+  box-shadow:0 3px 16px rgba(0,0,0,.4),0 0 14px rgba(232,185,79,.1);
   z-index:900;transition:all .2s;
   animation:slideUp .3s ease;
 }
-#resetBtn:hover{background:var(--accent-dim);box-shadow:0 6px 40px rgba(0,0,0,.6),0 0 50px rgba(232,185,79,.2);}
-#resetBtn svg{flex-shrink:0;}
+#resetBtn:hover{background:var(--accent-dim);}
+#resetBtn svg{flex-shrink:0;width:11px;height:11px;}
+/* Timer font picker — shows digits 123 in each font */
+.timer-font-option{padding:8px 4px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);color:var(--text-main);font-size:1.3rem;cursor:pointer;text-align:center;transition:all .2s;letter-spacing:-.02em;}
+.timer-font-option:hover{border-color:var(--accent);background:var(--accent-dim)}
+.timer-font-option.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent)}
 </style>
 </head>
 <body>
@@ -130,7 +135,7 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
     <div class="time-block"><span class="fs-digits" id="fsTSec">00</span><span class="fs-unit">שניות</span></div>
   </div>
   <div id="fsEndMsg">🎵 השיעור מתחיל עכשיו!</div>
-  <div class="fs-exit-hint">לחץ ESC ליציאה</div>
+  <button class="fs-exit-hint" onclick="goHome()">← מסך הבית</button>
 </div>
 
 <div class="page-wrap" id="pageWrap">
@@ -149,16 +154,16 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
     <div class="music-header">
       <span class="music-label">♪ Music Player</span>
       <div class="music-tabs">
-        <button class="music-tab active" onclick="setMusicType('spotify',this)">Spotify</button>
-        <button class="music-tab" onclick="setMusicType('youtube',this)">YouTube / YT Music</button>
+        <button class="music-tab" onclick="setMusicType('spotify',this)">Spotify</button>
+        <button class="music-tab active" onclick="setMusicType('youtube',this)">YouTube / YT Music</button>
       </div>
     </div>
     <div class="music-url-row">
-      <input class="music-url-input" id="musicUrl" type="text" placeholder="הדבק קישור Spotify — שיר, פלייליסט, אלבום…">
+      <input class="music-url-input" id="musicUrl" type="text" placeholder="הדבק קישור YouTube / YouTube Music…">
       <button class="music-load-btn" onclick="loadMusic()">▶ Load</button>
     </div>
     <div class="music-embed-area" id="musicEmbed">
-      <p class="music-placeholder">הדבק קישור למעלה ולחץ Load<br>המוזיקה תושמע כאן ישירות</p>
+      <p class="music-placeholder">הדביקו קישור YouTube / Spotify ולחצו Load ▶</p>
     </div>
   </div>
   <div class="watermark">Matan Margolin</div>
@@ -169,10 +174,14 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
 
 <div class="settings-panel" id="settingsPanel">
   <div class="settings-title">⚙ הגדרות</div>
+
+  <!-- 1. טקסט הכותרת -->
   <div class="setting-row">
     <div class="setting-label">טקסט הכותרת</div>
     <input class="setting-input" id="titleInput" value="התארגנו בנוח, נתחיל ממש עוד רגע" oninput="updateTitle()">
   </div>
+
+  <!-- 2. צבע כותרת -->
   <div class="setting-row">
     <div class="setting-label">צבע כותרת</div>
     <div class="color-row">
@@ -180,8 +189,10 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
       <span style="font-size:.8rem;color:var(--text-dim);font-family:'Cormorant Garamond',serif">בחר צבע</span>
     </div>
   </div>
+
+  <!-- 3. פונט כותרת -->
   <div class="setting-row">
-    <div class="setting-label">פונט</div>
+    <div class="setting-label">פונט כותרת</div>
     <div class="font-grid">
       <div class="font-option active" style="font-family:'Frank Ruhl Libre',serif" onclick="setFont('Frank Ruhl Libre',this)">פרנק-רוהל</div>
       <div class="font-option" style="font-family:'Noto Serif Hebrew',serif" onclick="setFont('Noto Serif Hebrew',this)">נוטו סריף</div>
@@ -191,6 +202,8 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
       <div class="font-option" style="font-family:'Suez One',serif" onclick="setFont('Suez One',this)">סואץ</div>
     </div>
   </div>
+
+  <!-- 4. גודל פונט -->
   <div class="setting-row">
     <div class="setting-label">גודל פונט</div>
     <div class="slider-row">
@@ -198,36 +211,63 @@ body{min-height:100vh;display:flex;flex-direction:column;align-items:center;back
       <span class="slider-val" id="sliderVal">3.2</span>
     </div>
   </div>
+
+  <div style="height:1px;background:var(--border);margin:2px 0;opacity:.5"></div>
+
+  <!-- 5. הגדר טיימר — inputs right-aligned -->
+  <div class="setting-row">
+    <div class="setting-label">הגדר טיימר</div>
+    <div style="display:flex;justify-content:flex-end;width:100%;">
+      <div class="timer-inputs-row">
+        <div class="timer-input-group">
+          <div class="timer-input-label">דקות</div>
+          <input class="timer-set-input" id="setMin" type="number" min="0" max="99" value="10">
+        </div>
+        <div class="timer-colon">:</div>
+        <div class="timer-input-group">
+          <div class="timer-input-label">שניות</div>
+          <input class="timer-set-input" id="setSec" type="number" min="0" max="59" value="00">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Start / Pause -->
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="resetTimer()">▶ Start</button>
+    <button class="btn" onclick="pauseTimer()">⏸ Pause</button>
+  </div>
+
+  <!-- 7. גופן טיימר -->
+  <div class="setting-row">
+    <div class="setting-label">גופן טיימר</div>
+    <div class="font-grid">
+      <div class="timer-font-option" style="font-family:'Cormorant Garamond',serif" onclick="setTimerFont('Cormorant Garamond',this)">123</div>
+      <div class="timer-font-option active" style="font-family:'Oswald',sans-serif" onclick="setTimerFont('Oswald',this)">123</div>
+      <div class="timer-font-option" style="font-family:'Playfair Display',serif" onclick="setTimerFont('Playfair Display',this)">123</div>
+      <div class="timer-font-option" style="font-family:'Bebas Neue',sans-serif" onclick="setTimerFont('Bebas Neue',this)">123</div>
+      <div class="timer-font-option" style="font-family:'Roboto Mono',monospace" onclick="setTimerFont('Roboto Mono',this)">123</div>
+      <div class="timer-font-option" style="font-family:'Space Mono',monospace" onclick="setTimerFont('Space Mono',this)">123</div>
+      <div class="timer-font-option" style="font-family:'DM Serif Display',serif" onclick="setTimerFont('DM Serif Display',this)">123</div>
+      <div class="timer-font-option" style="font-family:'Frank Ruhl Libre',serif" onclick="setTimerFont('Frank Ruhl Libre',this)">123</div>
+    </div>
+  </div>
+
+  <div style="height:1px;background:var(--border);margin:2px 0;opacity:.5"></div>
+
+  <!-- 8. רקע אנימציה -->
   <div class="setting-row">
     <div class="setting-label">רקע אנימציה</div>
     <div class="bg-grid">
       <div class="bg-option active" onclick="setBgTheme('stars',this)"><div class="bg-icon">✨</div><div class="bg-name">כוכבים</div></div>
       <div class="bg-option" onclick="setBgTheme('sea',this)"><div class="bg-icon">🌊</div><div class="bg-name">ים</div></div>
       <div class="bg-option" onclick="setBgTheme('forest',this)"><div class="bg-icon">🌿</div><div class="bg-name">יער</div></div>
-      <div class="bg-option" onclick="setBgTheme('spring',this)"><div class="bg-icon">🌸</div><div class="bg-name">אביב</div></div>
+      <div class="bg-option" onclick="setBgTheme('clouds',this)"><div class="bg-icon">☁️</div><div class="bg-name">עננים</div></div>
       <div class="bg-option" onclick="setBgTheme('rain',this)"><div class="bg-icon">🌧</div><div class="bg-name">גשם</div></div>
       <div class="bg-option" onclick="setBgTheme('music',this)"><div class="bg-icon">🎵</div><div class="bg-name">מוזיקה</div></div>
-      <div class="bg-option" onclick="setBgTheme('science',this)"><div class="bg-icon">⚛</div><div class="bg-name">מדעים</div></div>
+      <div class="bg-option" onclick="setBgTheme('space',this)"><div class="bg-icon">🪐</div><div class="bg-name">חלל</div></div>
       <div class="bg-option" onclick="setBgTheme('classroom',this)"><div class="bg-icon">🎒</div><div class="bg-name">כיתה</div></div>
     </div>
-  </div>
-  <div class="setting-row">
-    <div class="setting-label">הגדר טיימר</div>
-    <div class="timer-inputs-row">
-      <div class="timer-input-group">
-        <div class="timer-input-label">דקות</div>
-        <input class="timer-set-input" id="setMin" type="number" min="0" max="99" value="10">
-      </div>
-      <div class="timer-colon">:</div>
-      <div class="timer-input-group">
-        <div class="timer-input-label">שניות</div>
-        <input class="timer-set-input" id="setSec" type="number" min="0" max="59" value="00">
-      </div>
-    </div>
-  </div>
-  <div class="btn-row">
-    <button class="btn btn-primary" onclick="resetTimer()">▶ Start</button>
-    <button class="btn" onclick="pauseTimer()">⏸ Pause</button>
   </div>
 </div>
 
@@ -258,8 +298,29 @@ window.addEventListener('resize',resize);
 const THEMES={
   stars:{
     bg:['#0a0e1a','#0d2137'],
-    init(w,h){particles=Array.from({length:160},()=>({x:rnd(0,w),y:rnd(0,h),r:rnd(.2,1.8),baseA:rnd(.1,.75),a:0,phase:rnd(0,Math.PI*2),speed:rnd(.002,.01)}));},
-    draw(t){particles.forEach(p=>{p.a=p.baseA+Math.sin(t*p.speed+p.phase)*.25;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(240,230,211,${Math.max(0,p.a)})`;ctx.fill();});}
+    init(w,h){
+      particles=Array.from({length:150},()=>({
+        x:rnd(0,w), y:rnd(0,h),
+        r:rnd(.25,1.9),
+        baseA:rnd(.08,.65), a:0,
+        phase:rnd(0,Math.PI*2),
+        twinkleSpeed:rnd(.0008,.0035),   // very slow twinkle
+        vx:rnd(-.04,.04),                // slow horizontal drift
+        vy:rnd(-.025,.025),              // slow vertical drift
+        glowR:rnd(3,16)
+      }));
+    },
+    draw(t){
+      particles.forEach(p=>{
+        p.x+=p.vx; p.y+=p.vy;
+        if(p.x<-2)p.x=W+2; if(p.x>W+2)p.x=-2;
+        if(p.y<-2)p.y=H+2; if(p.y>H+2)p.y=-2;
+        p.a=p.baseA+Math.sin(t*p.twinkleSpeed+p.phase)*p.baseA*.85;
+        p.a=Math.max(0,Math.min(1,p.a));
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(248,240,218,${p.a})`;ctx.fill();
+      });
+    }
   },
   sea:{
     bg:['#031e35','#065278'],
@@ -275,10 +336,38 @@ const THEMES={
     init(w,h){particles=Array.from({length:60},()=>({x:rnd(0,w),y:rnd(-h,0),vx:rnd(-.2,.2),vy:rnd(.3,1),r:rnd(2,7),rot:rnd(0,Math.PI*2),rotS:rnd(-.04,.04),phase:rnd(0,Math.PI*2),color:`hsl(${100+rnd(0,55)},${50+rnd(0,30)}%,${22+rnd(0,22)}%)`}));},
     draw(t){particles.forEach(p=>{p.y+=p.vy;p.x+=p.vx+Math.sin(t*.01+p.phase)*.5;p.rot+=p.rotS;if(p.y>H+20){p.y=-20;p.x=rnd(0,W);}ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.beginPath();ctx.ellipse(0,0,p.r*1.7,p.r*.85,0,0,Math.PI*2);ctx.fillStyle=p.color;ctx.globalAlpha=.72;ctx.fill();ctx.restore();});}
   },
-  spring:{
-    bg:['#0b1c05','#173310'],
-    init(w,h){const cols=['#ffb7c5','#ffd6e0','#ffe4b5','#fff0a0','#d4f7a0','#c8f2c2','#ffc8f0'];particles=Array.from({length:70},()=>({x:rnd(0,w),y:rnd(0,h),vy:-rnd(.1,.55),vx:rnd(-.3,.3),r:rnd(2,6),rot:rnd(0,Math.PI*2),rotS:rnd(-.03,.03),phase:rnd(0,Math.PI*2),color:cols[Math.floor(rnd(0,cols.length))]}));},
-    draw(t){particles.forEach(p=>{p.y+=p.vy+Math.sin(t*.008+p.phase)*.3;p.x+=p.vx+Math.cos(t*.007+p.phase)*.35;p.rot+=p.rotS;if(p.y<-20){p.y=H+10;p.x=rnd(0,W);}if(p.x<-20)p.x=W+10;if(p.x>W+20)p.x=-10;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.globalAlpha=.68;ctx.fillStyle=p.color;for(let k=0;k<5;k++){ctx.beginPath();ctx.ellipse(p.r,0,p.r*1.1,p.r*.55,0,0,Math.PI*2);ctx.fill();ctx.rotate(Math.PI*.4);}ctx.restore();});}
+  clouds:{
+    bg:['#0d1a2e','#1a2f4a'],
+    init(w,h){
+      particles=Array.from({length:12},()=>({
+        x:rnd(-w*.3,w*1.2), y:rnd(h*.05,h*.75),
+        speed:rnd(.12,.38),
+        scale:rnd(.6,1.6),
+        a:rnd(.06,.18),
+        puffs:[
+          {dx:0,dy:0,r:rnd(38,65)},
+          {dx:rnd(40,80),dy:rnd(-12,12),r:rnd(30,55)},
+          {dx:rnd(-40,-70),dy:rnd(-8,14),r:rnd(28,50)},
+          {dx:rnd(15,45),dy:rnd(-25,-10),r:rnd(25,42)},
+          {dx:rnd(-15,-40),dy:rnd(-20,-8),r:rnd(22,38)},
+        ]
+      }));
+    },
+    draw(t){
+      particles.forEach(p=>{
+        p.x+=p.speed;
+        if(p.x>W*1.35) p.x=-W*.35;
+        ctx.save();
+        ctx.translate(p.x,p.y);
+        ctx.scale(p.scale,p.scale);
+        ctx.globalAlpha=p.a;
+        ctx.fillStyle='#c8dff0';
+        p.puffs.forEach(pf=>{
+          ctx.beginPath();ctx.arc(pf.dx,pf.dy,pf.r,0,Math.PI*2);ctx.fill();
+        });
+        ctx.restore();
+      });
+    }
   },
   rain:{
     bg:['#060810','#0d1120'],
@@ -290,10 +379,63 @@ const THEMES={
     init(w,h){const notes=['♩','♪','♫','♬','𝄞','𝄢'];particles=Array.from({length:50},()=>({x:rnd(0,w),y:rnd(0,h),vy:-rnd(.12,.55),size:rnd(10,30),a:rnd(.07,.28),phase:rnd(0,Math.PI*2),char:notes[Math.floor(rnd(0,notes.length))]}));},
     draw(t){particles.forEach(p=>{p.y+=p.vy;p.x+=Math.sin(t*.008+p.phase)*.6;if(p.y<-40){p.y=H+10;p.x=rnd(0,W);}ctx.save();ctx.globalAlpha=p.a;ctx.fillStyle='#e8b94f';ctx.font=`${p.size}px 'Cormorant Garamond',serif`;ctx.fillText(p.char,p.x,p.y);ctx.restore();});}
   },
-  science:{
+  space:{
     bg:['#030a18','#05122a'],
-    init(w,h){particles=Array.from({length:9},()=>({cx:rnd(w*.1,w*.9),cy:rnd(h*.1,h*.9),rx:rnd(40,100),ry:rnd(14,38),tilt:rnd(0,Math.PI),speed:rnd(.004,.009),phase:rnd(0,Math.PI*2),color:`hsl(${180+rnd(0,80)},90%,65%)`}));},
-    draw(t){ctx.fillStyle='rgba(90,170,255,.03)';for(let x=0;x<W;x+=44)for(let y=0;y<H;y+=44){ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();}particles.forEach(p=>{ctx.save();ctx.translate(p.cx,p.cy);ctx.rotate(p.tilt);ctx.beginPath();ctx.ellipse(0,0,p.rx,p.ry,0,0,Math.PI*2);ctx.strokeStyle=p.color;ctx.globalAlpha=.15;ctx.lineWidth=1;ctx.stroke();const a=t*p.speed+p.phase,ex=Math.cos(a)*p.rx,ey=Math.sin(a)*p.ry;ctx.beginPath();ctx.arc(ex,ey,3.5,0,Math.PI*2);ctx.fillStyle=p.color;ctx.globalAlpha=.85;ctx.fill();const g=ctx.createRadialGradient(ex,ey,0,ex,ey,14);g.addColorStop(0,p.color.replace('hsl','hsla').replace(')',',0.35)'));g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.globalAlpha=1;ctx.beginPath();ctx.arc(ex,ey,14,0,Math.PI*2);ctx.fill();ctx.restore();});}
+    init(w,h){
+      particles=Array.from({length:4},()=>{
+        const cx=rnd(w*.12,w*.88), cy=rnd(h*.12,h*.88);
+        const numRings=Math.floor(rnd(2,4));
+        const rings=Array.from({length:numRings},(_,i)=>({
+          rx: rnd(80,160)+i*40,
+          ry: rnd(22,55)+i*14,
+          tilt: rnd(0,Math.PI),
+          speed: rnd(.002,.007)*(Math.random()<.5?1:-1),
+          phase: rnd(0,Math.PI*2),
+          color:`hsl(${170+rnd(0,100)},90%,65%)`
+        }));
+        return {cx,cy,rings,
+          nucleusPhase:rnd(0,Math.PI*2),
+          nucleusSpeed:rnd(.004,.012),
+          nucleusR:rnd(5,10),
+          nucleusColor:`hsl(${200+rnd(0,60)},100%,78%)`
+        };
+      });
+    },
+    draw(t){
+      // Subtle dot grid
+      ctx.fillStyle='rgba(90,170,255,.018)';
+      for(let x=0;x<W;x+=52)for(let y=0;y<H;y+=52){
+        ctx.beginPath();ctx.arc(x,y,1,0,Math.PI*2);ctx.fill();
+      }
+      particles.forEach(p=>{
+        p.rings.forEach(ring=>{
+          ctx.save();
+          ctx.translate(p.cx,p.cy);ctx.rotate(ring.tilt);
+          ctx.beginPath();ctx.ellipse(0,0,ring.rx,ring.ry,0,0,Math.PI*2);
+          ctx.strokeStyle=ring.color;ctx.globalAlpha=.10;ctx.lineWidth=1;ctx.stroke();
+          const a=t*ring.speed+ring.phase;
+          const ex=Math.cos(a)*ring.rx, ey=Math.sin(a)*ring.ry;
+          const g=ctx.createRadialGradient(ex,ey,0,ex,ey,14);
+          g.addColorStop(0,ring.color.replace('hsl','hsla').replace(')',',0.4)'));
+          g.addColorStop(1,'transparent');
+          ctx.fillStyle=g;ctx.globalAlpha=1;
+          ctx.beginPath();ctx.arc(ex,ey,14,0,Math.PI*2);ctx.fill();
+          ctx.beginPath();ctx.arc(ex,ey,3,0,Math.PI*2);
+          ctx.fillStyle=ring.color;ctx.globalAlpha=.85;ctx.fill();
+          ctx.restore();
+        });
+        // Pulsing nucleus
+        const pulse=.6+.4*Math.sin(t*p.nucleusSpeed+p.nucleusPhase);
+        const ng=ctx.createRadialGradient(p.cx,p.cy,0,p.cx,p.cy,p.nucleusR*3.5*pulse);
+        ng.addColorStop(0,p.nucleusColor.replace('hsl','hsla').replace(')',',0.65)'));
+        ng.addColorStop(.5,p.nucleusColor.replace('hsl','hsla').replace(')',',0.18)'));
+        ng.addColorStop(1,'transparent');
+        ctx.fillStyle=ng;ctx.globalAlpha=1;
+        ctx.beginPath();ctx.arc(p.cx,p.cy,p.nucleusR*3.5*pulse,0,Math.PI*2);ctx.fill();
+        ctx.beginPath();ctx.arc(p.cx,p.cy,p.nucleusR,0,Math.PI*2);
+        ctx.fillStyle=p.nucleusColor;ctx.globalAlpha=.85;ctx.fill();
+      });
+    }
   },
   classroom:{
     bg:['#0a0704','#170f06'],
@@ -465,7 +607,7 @@ function pauseTimer(){if(running){clearInterval(timerInterval);running=false;}el
 updateDisplay();timerInterval=setInterval(tick,1000);running=true;
 
 // ── MUSIC ──
-let musicType='spotify';
+let musicType='youtube';
 function setMusicType(type,el){musicType=type;document.querySelectorAll('.music-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');document.getElementById('musicUrl').placeholder=type==='spotify'?'הדבק קישור Spotify — שיר, פלייליסט, אלבום…':'הדבק קישור YouTube / YouTube Music…';}
 
 function getYTIds(url){
@@ -524,6 +666,27 @@ function exitFullscreen(){
   if(remaining<=0) document.getElementById('resetBtn').style.display='flex';
 }
 
+function goHome(){
+  exitFullscreen();
+  // Always reset timer and restore everything
+  clearInterval(timerInterval); running=false; fadedAlready=false;
+  const m=parseInt(document.getElementById('setMin').value)||0;
+  const s=parseInt(document.getElementById('setSec').value)||0;
+  totalSec=m*60+s; remaining=totalSec;
+  const mainTitle=document.getElementById('mainTitle');
+  mainTitle.style.display='';mainTitle.style.opacity='';mainTitle.style.transition='';
+  document.getElementById('ornament').style.display='';
+  const fsTitle=document.getElementById('fsTitle');
+  fsTitle.style.display='';fsTitle.style.opacity='';fsTitle.style.transition='';
+  elDisplay.style.display=''; elLabel.style.display='';
+  elEnded.style.display='none';
+  document.getElementById('fsTimerWrap').style.display='';
+  document.getElementById('fsEndMsg').style.display='none';
+  document.getElementById('resetBtn').style.display='none';
+  resetMusicFade(); updateDisplay();
+  timerInterval=setInterval(tick,1000); running=true;
+}
+
 function resetAll(){
   clearInterval(timerInterval); running=false; fadedAlready=false;
   // Restore title
@@ -554,6 +717,7 @@ document.addEventListener('click',e=>{const p=document.getElementById('settingsP
 function updateTitle(){const v=document.getElementById('titleInput').value;document.getElementById('mainTitle').textContent=v;document.getElementById('fsTitle').textContent=v;}
 function updateTitleColor(){document.documentElement.style.setProperty('--title-color',document.getElementById('titleColor').value);}
 function setFont(name,el){document.querySelectorAll('.font-option').forEach(e=>e.classList.remove('active'));el.classList.add('active');document.documentElement.style.setProperty('--title-font',`'${name}', serif`);}
+function setTimerFont(name,el){document.querySelectorAll('.timer-font-option').forEach(e=>e.classList.remove('active'));el.classList.add('active');document.documentElement.style.setProperty('--timer-font',`'${name}', sans-serif`);}
 function updateFontSize(){const v=document.getElementById('fontSizeSlider').value;document.getElementById('sliderVal').textContent=parseFloat(v).toFixed(1);document.documentElement.style.setProperty('--title-size',v+'rem');}
 </script>
 </body>
